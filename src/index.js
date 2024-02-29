@@ -4,13 +4,15 @@ const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2/promise');
 require('dotenv').config();
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 //crear el servidor
 
 const api = express();
 
 api.use(cors());
-api.use(express.json());
+api.use(express.json({ limit: '25mb' }));
 
 const port = process.env.PORT || 4500;
 
@@ -25,6 +27,11 @@ async function connect_db() {
 
   return conex;
 }
+
+const generateToken = (data) => {
+  const token = jwt.sign(data, 'super_secret_key', { expiresIn: '1h' });
+  return token;
+};
 
 api.listen(port, () => {
   console.log(`servidor escuchando por http://localhost:${port}`);
@@ -222,6 +229,41 @@ api.delete('/students/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'An error occurred while deleting the student',
+    });
+  }
+});
+
+//6 LOGIN
+
+api.post('/login', async (req, res) => {
+  const conex = await connect_db();
+  const { email, pass } = req.body;
+  const selectStudent = 'SELECT * from parents_users_db where email = ? ';
+  const [result] = await conex.query(selectStudent, [email]);
+
+  if (result.length !== 0) {
+    const isOkPass = await bcrypt.compare(pass, result[0].hashed_password);
+    if (isOkPass) {
+      //genera token
+      const infoToken = {
+        id: result[0].id,
+        email: result[0].email,
+      };
+      const token = generateToken(infoToken);
+      res.json({
+        success: true,
+        token: token,
+      });
+    } else {
+      res.json({
+        success: false,
+        mjs: 'Invalid password',
+      });
+    }
+  } else {
+    resp.json({
+      success: false,
+      msj: 'Email does not exist',
     });
   }
 });
