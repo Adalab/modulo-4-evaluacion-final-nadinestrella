@@ -6,6 +6,8 @@ const mysql = require('mysql2/promise');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const swaggerUI = require('swagger-ui-express');
+const swaggerConfig = require('./swagger.json');
 
 //crear el servidor
 
@@ -376,6 +378,8 @@ api.put('/logout', (req, res) => {
     }
   );
 });
+
+api.use('/doc', swaggerUI.serve, swaggerUI.setup(swaggerConfig));
 
 // api.put('/logout', (req, res) => {
 //   try {

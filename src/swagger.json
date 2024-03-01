@@ -1,0 +1,249 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "modulo-4-evaluacion-final-nadinestrella",
+    "version": "1.0.0",
+    "description": "Evaluacion del modulo 4. IMPORTANTE!!! NO INFO AUN SOBRE LAS RESPUESTAS "
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4500",
+      "description": "Evaluacion del modulo 4"
+    }
+  ],
+  "paths": {
+    "/addStudent": {
+      "get": {
+        "summary": "Inserta un registro en su entidad principal",
+        "responses": {
+          "200": {
+            "description": "Operación exitosa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "projects": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Project"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/students": {
+      "post": {
+        "summary": "Leer/Listar todos los registros existentes",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewProject"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Proyecto creado exitosamente"
+          }
+        }
+      }
+    },
+    "/students/:id": {
+      "get": {
+        "summary": "Leer registros por el campo de tu interes",
+        "parameters": [
+          {
+            "name": "idproject",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación exitosa"
+          },
+          "404": {
+            "description": "Proyecto no encontrado"
+          }
+        }
+      }
+    },
+    "/students/:id ": {
+      "put": {
+        "summary": "Leer registros por el campo de tu interes",
+        "parameters": [
+          {
+            "name": "idproject",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación exitosa"
+          },
+          "404": {
+            "description": "Proyecto no encontrado"
+          }
+        }
+      }
+    },
+    "/students/:id": {
+      "delete": {
+        "summary": "Elimina un registro existente",
+        "parameters": [
+          {
+            "name": "idproject",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación exitosa"
+          },
+          "404": {
+            "description": "Proyecto no encontrado"
+          }
+        }
+      }
+    },
+    "/register": {
+      "post": {
+        "summary": "Registra un parentuser",
+        "parameters": [
+          {
+            "name": "idproject",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación exitosa"
+          },
+          "404": {
+            "description": "Proyecto no encontrado"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Logea un usuario con un mail y password",
+        "parameters": [
+          {
+            "name": "idproject",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación exitosa"
+          },
+          "404": {
+            "description": "Proyecto no encontrado"
+          }
+        }
+      }
+    },
+    "/authentication": {
+      "get": {
+        "summary": "Autentifica un usuario",
+        "parameters": [
+          {
+            "name": "idproject",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación exitosa"
+          },
+          "404": {
+            "description": "Proyecto no encontrado"
+          }
+        }
+      }
+    },
+    "/logout": {
+      "put": {
+        "summary": "fin del login",
+        "parameters": [
+          {
+            "name": "idproject",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación exitosa"
+          },
+          "404": {
+            "description": "Proyecto no encontrado"
+          }
+        }
+      }
+    }
+  },
+
+  "components": {
+    "schemas": {
+      "Project": {
+        "type": "object",
+        "properties": {
+          "idProject": {
+            "type": "integer"
+          }
+        }
+      },
+      "NewProject": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slogan": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
