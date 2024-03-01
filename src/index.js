@@ -29,7 +29,9 @@ async function connect_db() {
 }
 
 const generateToken = (data) => {
-  const token = jwt.sign(data, 'super_secret_key', { expiresIn: '1h' });
+  const token = jwt.sign(data, process.env.SECRET_KEY || 'super_secret_key', {
+    expiresIn: '1h',
+  });
   return token;
 };
 
@@ -233,16 +235,55 @@ api.delete('/students/:id', async (req, res) => {
   }
 });
 
-//6 LOGIN
+//BONUS
+
+// 6 REGISTER
+
+api.post('/register', async (req, res) => {
+  try {
+    const conex = await connect_db();
+    const { nameparent, email, password } = req.body;
+
+    // Busca si ya existe un usuario con el email proporcionado
+    const selectNameParent = 'SELECT * FROM parents_users_db WHERE email = ?';
+    const [result] = await conex.query(selectNameParent, [email]);
+
+    // Si no encuentra un registro, inserta
+    if (result.length === 0) {
+      const passwordHashed = await bcrypt.hash(password, 10);
+      const insertNameParent =
+        'INSERT INTO parents_users_db (nameparent, email, password) VALUES (?, ?, ?)';
+      const [resultInsert] = await conex.query(insertNameParent, [
+        nameparent,
+        email,
+        passwordHashed,
+      ]);
+
+      res.json({ success: true, data: resultInsert });
+    } else {
+      // Usuario ya existe
+      res.status(409).json({ success: false, message: 'User already exists' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred during registration',
+    });
+  }
+});
+
+//7 LOGIN
 
 api.post('/login', async (req, res) => {
   const conex = await connect_db();
-  const { email, pass } = req.body;
+  const { email, password } = req.body;
   const selectStudent = 'SELECT * from parents_users_db where email = ? ';
   const [result] = await conex.query(selectStudent, [email]);
 
   if (result.length !== 0) {
-    const isOkPass = await bcrypt.compare(pass, result[0].hashed_password);
+    const isOkPass = await bcrypt.compare(password, result[0].password);
+
     if (isOkPass) {
       //genera token
       const infoToken = {
@@ -250,8 +291,10 @@ api.post('/login', async (req, res) => {
         email: result[0].email,
       };
       const token = generateToken(infoToken);
+      //respuesta al usuario
       res.json({
         success: true,
+        messagge: `Welcome ${email}, you are in `,
         token: token,
       });
     } else {
@@ -261,7 +304,7 @@ api.post('/login', async (req, res) => {
       });
     }
   } else {
-    resp.json({
+    res.json({
       success: false,
       msj: 'Email does not exist',
     });
