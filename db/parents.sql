@@ -1,0 +1,1 @@
+SELECT * FROM school.parents_users_db;

@@ -8,6 +8,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const swaggerUI = require('swagger-ui-express');
 const swaggerConfig = require('./swagger.json');
+const addStudent = require('../src/controllers/addStudent.controller');
+const connect_db = require('../src/config/connectDb');
 
 //crear el servidor
 
@@ -17,18 +19,6 @@ api.use(cors());
 api.use(express.json({ limit: '25mb' }));
 
 const port = process.env.PORT || 4500;
-
-async function connect_db() {
-  const conex = await mysql.createConnection({
-    host: process.env.HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASS || 'root',
-    database: 'school',
-  });
-  conex.connect();
-
-  return conex;
-}
 
 const generateToken = (data) => {
   const token = jwt.sign(data, process.env.SECRET_KEY || 'super_secret_key', {
@@ -72,65 +62,10 @@ api.listen(port, () => {
 //endpoints
 
 //1 INSERTAR UN REGISTRO EN SU ENTIDAD PPAL
+//EN CONTROLLERS
 
 api.post('/addStudent', async (req, res) => {
-  try {
-    const conex = await connect_db();
-    const data = req.body;
-    const {
-      classroom,
-      name,
-      lastname,
-      dateOfBirth,
-      location,
-      photo,
-      report,
-      comments,
-      parentId,
-    } = data;
-
-    if (!name || !lastname) {
-      return res.status(400).json({
-        success: false,
-        message: 'Name and lastname are required',
-      });
-    }
-
-    const sql =
-      'INSERT INTO students (class, name_student, lastname, date_of_birth, location, photo, report, comments, fk_parent_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    const [result] = await conex.query(sql, [
-      classroom,
-      name,
-      lastname,
-      dateOfBirth,
-      location,
-      photo,
-      report,
-      comments,
-      parentId,
-    ]);
-
-    console.log[result];
-    res.json({
-      success: true,
-      id: result.insertId,
-    });
-  } catch (error) {
-    console.error(error);
-    let message = 'An error occurred while adding the student';
-    let statusCode = 500;
-
-    // Aquí puedes manejar errores específicos si lo deseas, por ejemplo, errores de validación de datos de entrada
-    if (error.code === 'ER_BAD_NULL_ERROR') {
-      // Ejemplo de manejo de un error específico de MySQL
-      message = 'Missing fields for the student';
-      statusCode = 400;
-    }
-    res.status(statusCode).json({
-      success: false,
-      message: message,
-    });
-  }
+  addStudent.addStudent(req, res);
 });
 
 //2 LEER/LISTAR TODOS LOS REGISTROS EXISTENTES
