@@ -217,7 +217,7 @@ api.put('/students/:id', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'actualizado correctamente',
+      message: 'Updated',
     });
   } catch (error) {
     console.log(error);
@@ -270,7 +270,7 @@ api.delete('/students/:id', async (req, res) => {
 api.post('/register', async (req, res) => {
   try {
     const conex = await connect_db();
-    const { nameparent, email, password } = req.body;
+    const { nameparent, email, address, password } = req.body;
 
     // Busca si ya existe un usuario con el email proporcionado
     const selectNameParent = 'SELECT * FROM parents_users_db WHERE email = ?';
@@ -280,14 +280,19 @@ api.post('/register', async (req, res) => {
     if (result.length === 0) {
       const passwordHashed = await bcrypt.hash(password, 10);
       const insertNameParent =
-        'INSERT INTO parents_users_db (nameparent, email, password) VALUES (?, ?, ?)';
+        'INSERT INTO parents_users_db (nameparent, email, address, password) VALUES (?,?, ?, ?)';
       const [resultInsert] = await conex.query(insertNameParent, [
         nameparent,
         email,
+        address,
         passwordHashed,
       ]);
 
-      res.json({ success: true, data: resultInsert });
+      res.json({
+        success: true,
+        data: resultInsert,
+        message: `${nameparent} was registered`,
+      });
     } else {
       // Usuario ya existe
       res.status(409).json({ success: false, message: 'User already exists' });
@@ -301,7 +306,7 @@ api.post('/register', async (req, res) => {
   }
 });
 
-//7 LOGIN
+//7 LOGIN. EMAIL AND PASSWORD
 
 api.post('/login', async (req, res) => {
   const conex = await connect_db();
@@ -339,14 +344,45 @@ api.post('/login', async (req, res) => {
   }
 });
 
-// 8 AUTHENTICATION
+// 8 AUTHENTICATION. PASAR EL TOKEN
 
 api.get('/parentProfile', authenticate, async (req, res) => {
   const conex = await connect_db();
-  const sql = 'SELECT * from parents_users_db where email =? ';
+  const sql =
+    'SELECT parents_users_db.nameparent, parents_users_db.email, parents_users_db.address, students.class, students.name_student, students.lastname, students.date_of_birth, students.location, students.photo, students.report,students.comments FROM parents_users_db INNER JOIN students ON parents_users_db.id = students.fk_parent_id WHERE parents_users_db.email = ?';
 
   const [result] = await conex.query(sql, [req.user.email]);
 
   conex.end();
   res.json({ success: true, user: result });
 });
+
+//9 LOG OUT
+
+api.put('/logout', (req, res) => {
+  const tokenHeader = req.headers['authorization'];
+  //const token = tokenHeader.split(' ')[1];
+
+  jwt.sign(
+    { data: '' },
+    process.env.SECRET_KEY || 'super_secret_key',
+    { expiresIn: 1 },
+    (error, logoutToken) => {
+      if (!error) {
+        res.json({ message: 'Logout' });
+      } else {
+        res.json({ message: 'An error occurred while logging out' });
+      }
+    }
+  );
+});
+
+// api.put('/logout', (req, res) => {
+//   try {
+//     // No es necesario realizar ninguna acción de logout en un sistema JWT
+//     res.json({ message: 'Logout successful' });
+//   } catch (error) {
+//     console.error('Error during logout:', error);
+//     res.status(500).json({ message: 'An error occurred while logging out' });
+//   }
+// });
