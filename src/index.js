@@ -35,6 +35,34 @@ const generateToken = (data) => {
   return token;
 };
 
+const verifyToken = (token) => {
+  try {
+    const verifyT = jwt.verify(
+      token,
+      process.env.SECRET_KEY || 'super_secret_key'
+    );
+    return verifyT;
+  } catch (error) {
+    return null;
+  }
+};
+
+const authenticate = (req, res, next) => {
+  const tokenBearer = req.headers['authorization'];
+
+  if (!tokenBearer) {
+    return res.status(401).json({ error: 'Token does not exist' });
+  }
+  const token = tokenBearer.split(' ')[1];
+  const validateToken = verifyToken(token);
+  if (!validateToken) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  req.user = validateToken;
+  next();
+};
+
 api.listen(port, () => {
   console.log(`servidor escuchando por http://localhost:${port}`);
 });
@@ -309,4 +337,16 @@ api.post('/login', async (req, res) => {
       msj: 'Email does not exist',
     });
   }
+});
+
+// 8 AUTHENTICATION
+
+api.get('/parentProfile', authenticate, async (req, res) => {
+  const conex = await connect_db();
+  const sql = 'SELECT * from parents_users_db where email =? ';
+
+  const [result] = await conex.query(sql, [req.user.email]);
+
+  conex.end();
+  res.json({ success: true, user: result });
 });
